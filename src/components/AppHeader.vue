@@ -7,9 +7,19 @@ export default {
   data() {
     return {
       store,
+      timer: null,
+      elapsedTime:0
     };
   },
   methods: {
+    debounce(){
+      clearTimeout(this.timer);
+      this.timer = setTimeout(() => {
+        this.elapsedTime = 0;
+        this.checkClick();
+      }, 700); 
+      this.elapsedTime++;
+    },
     checkClick() {
       // console.log(this.store.searchInput);
       if(this.store.searchInput.trim().length <3){
@@ -34,7 +44,7 @@ export default {
   <div class="container">
     <div class="d-flex justify-content-between">
       <div>
-        <input type="text" v-model="this.store.searchInput" />
+        <input type="text" v-model="this.store.searchInput" @keyup.enter="checkClick()" @input="debounce()"/>
         <button @click="checkClick">CERCA</button>
         <span id="minLength" class="d-none text-danger">la parola da ricercare deve essere almeno di 3 caratteri</span>
       </div>
