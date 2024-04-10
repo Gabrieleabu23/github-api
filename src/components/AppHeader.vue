@@ -26,17 +26,18 @@ export default {
         document.getElementById('minLength').classList.remove('d-none');
       }else{
         document.getElementById('minLength').classList.add('d-none');
+        this.store.TypeSearch = document.getElementById("typeSearch").value;
         if (this.store.clicked) {
           this.store.clicked = 0;
         } else {
           this.store.clicked = 1;
         }
       }
-
-      this.store.TypeSearch = document.getElementById("typeSearch").value;
+      
       // console.log('cliccato!');
     },
   },
+
 };
 </script>
 
@@ -48,7 +49,7 @@ export default {
         <button @click="checkClick">CERCA</button>
         <span id="minLength" class="d-none text-danger">la parola da ricercare deve essere almeno di 3 caratteri</span>
       </div>
-      <select name="typeSearch" id="typeSearch">
+      <select name="typeSearch" id="typeSearch" @change="checkClick()" >
         <option disabled>Seleziona repo/utenti</option>
         <option value="Repository" selected>Repository</option>
         <option value="users">Users</option>

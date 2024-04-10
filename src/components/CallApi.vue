@@ -1,7 +1,7 @@
 <script>
 import { store } from "../store";
 import axios from "axios";
-import config from '../config';
+import config from "../config";
 export default {
   name: "CallApi",
   data() {
@@ -12,7 +12,6 @@ export default {
     };
   },
   methods: {
-
     async getRepo() {
       this.isLoading = true;
       console.log("Sono in getRepo()");
@@ -70,6 +69,13 @@ export default {
       console.log("valore vecchio:", oldValue);
     },
   },
+    watch: {
+      "store.TypeSearch": function (newVal, oldVal) {
+        this.getRepo();
+        // Esegui altre azioni qui in base al nuovo valore
+      },
+    },
+
   computed: {
     checkifClick() {
       console.log("computed");
@@ -83,7 +89,11 @@ export default {
 <template>
   <div v-if="!isLoading" class="container">
     <div class="row w-75 mx-auto mt-4">
-      <div class="col-4 p-2" v-for="repo in arrayApi" :key="repo.id">
+      <div
+        class="col-12 col-md-6 col-lg-4 p-2"
+        v-for="repo in arrayApi"
+        :key="repo.id"
+      >
         <div class="card rounded-4">
           <div class="bg-dark d-flex justify-content-center rounded-top">
             <img
@@ -142,7 +152,6 @@ export default {
   max-height: 70px; /* Altezza massima del paragrafo */
   overflow-y: auto; /* Scroll verticale se il testo supera l'altezza massima */
 }
-
 
 .loader {
   position: fixed;
