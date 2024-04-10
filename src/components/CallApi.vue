@@ -7,71 +7,56 @@ export default {
     return {
       store,
       arrayApi: [],
+      isLoading: 0,
     };
   },
   methods: {
-    getRepo() {
-      console.log("sono in getRepo()");
+
+    async getRepo() {
+      this.isLoading = true;
+      console.log("Sono in getRepo()");
       console.log(this.store.searchInput);
+      let url;
+      const data = {
+        params: {
+          q: `${this.store.searchInput}`,
+        },
+        headers: {
+          Authorization: `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`,
+          "X-GitHub-Api-Version": "2022-11-28",
+        },
+      };
       if (
         this.store.searchInput.trim() != "" &&
         this.store.TypeSearch == "Repository"
       ) {
-        const data = {
-          params: {
-            q: this.store.searchInput,
-          },
-          headers: {
-            Authorization: `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`,
-            "X-GitHub-Api-Version": "2022-11-28",
-          },
-        };
-
-        axios
-          .get("https://api.github.com/search/repositories", data)
-          .then((res) => {
-            // res.data.forEach(element => {
-            //     this.repositories.push(element.name);
-            // });
-            // console.log(res.data.items);
-            this.arrayApi = res.data.items;
-            if (this.arrayApi.length > 0 && this.store.cliccato == 1) {
-              this.store.cliccato = 0;
-            }
-            console.log(this.arrayApi);
-          })
-          .catch((error) => {
-            console.error("Error fetching data from first API:", error);
-          });
+        url = "repositories";
       } else if (
         this.store.searchInput.trim() != "" &&
         this.store.TypeSearch == "users"
       ) {
-        const data = {
-          params: {
-            q: `${this.store.searchInput}`,
-          },
-          headers: {
-            Authorization: `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`,
-            "X-GitHub-Api-Version": "2022-11-28",
-          },
-        };
-        axios
-          .get("https://api.github.com/search/users", data)
-          .then((res) => {
-            // res.data.forEach(element => {
-            //     this.repositories.push(element.name);
-            // });
-            // console.log(res.data.items);
-            this.arrayApi = res.data.items;
-            if (this.arrayApi.length > 0 && this.store.cliccato == 1) {
-              this.store.cliccato = 0;
-            }
-            console.log(this.arrayApi);
-          })
-          .catch((error) => {
-            console.error("Error fetching data from first API:", error);
-          });
+        url = "users";
+      }
+      try {
+        const res = await axios.get(
+          `https://api.github.com/search/${url}`,
+          data
+        );
+        this.arrayApi = res.data.items;
+        if (this.arrayApi.length > 0 && this.store.cliccato == 1) {
+          this.store.cliccato = 0;
+        }
+        console.log(this.arrayApi);
+      } catch (error) {
+        console.error(
+          "Errore durante il recupero dei dati dalla prima API:",
+          error
+        );
+      } finally {
+        // Questo blocco verrà sempre eseguito, indipendentemente dall'errore o dal successo della chiamata Axios
+        // Qui puoi eseguire operazioni di pulizia o aggiornare lo stato dell'applicazione
+        // Per esempio, fermare il loader
+        this.isLoading = false;
       }
     },
   },
@@ -95,9 +80,9 @@ export default {
 </script>
 
 <template>
-  <div class="container">
+  <div v-if="!isLoading" class="container">
     <div class="row w-75 mx-auto mt-4">
-      <div class="col-4 p-2" v-for="repo in arrayApi">
+      <div class="col-4 p-2" v-for="repo in arrayApi" :key="repo.id">
         <div class="card rounded-4">
           <div class="bg-dark d-flex justify-content-center rounded-top">
             <img
@@ -112,11 +97,12 @@ export default {
               {{ repo.full_name ? repo.full_name : repo.login }}
             </h5>
 
-            <div class="paragraph_height overflow-hidden">
-              <p class="card-text">
-                <span v-if="repo.description">{{ repo.description }}</span>
+            <div class="card-text paragraph-height overflow-hidden mb-0">
+              <p v-if="repo.description" class="mb-0">
+                {{ repo.description }}
               </p>
             </div>
+
             <h4 v-if="repo.stargazers_count">
               <i class="fa-solid fa-star"></i> {{ repo.stargazers_count }}
             </h4>
@@ -139,13 +125,39 @@ export default {
       </div>
     </div>
   </div>
+  <div v-else class="text-center">
+    <div class="spinner-border" role="status">
+      <span class="sr-only">Loading...</span>
+    </div>
+    <p>Caricamento...</p>
+  </div>
 </template>
 
 <style>
-.paragraph_height{
-    max-height: 80px;
-}
 .card-body {
-  height: 200px;
+  height: 20rem;
+}
+.paragraph-height {
+  max-height: 70px; /* Altezza massima del paragrafo */
+  overflow-y: auto; /* Scroll verticale se il testo supera l'altezza massima */
+}
+
+
+.loader {
+  position: fixed;
+  z-index: 9999;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.spinner-border {
+  width: 3rem;
+  height: 3rem;
 }
 </style>
