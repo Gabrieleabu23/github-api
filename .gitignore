@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# CONFIG FOR TOKEN GITHUB
+config.js

@@ -1,6 +1,7 @@
 <script>
 import { store } from "../store";
 import axios from "axios";
+import config from '../config';
 export default {
   name: "CallApi",
   data() {
@@ -22,7 +23,7 @@ export default {
           q: `${this.store.searchInput}`,
         },
         headers: {
-          Authorization: `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`,
+          Authorization: `${config.githubToken}`,
           "X-GitHub-Api-Version": "2022-11-28",
         },
       };
