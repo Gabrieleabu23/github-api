@@ -8,55 +8,61 @@ export default {
     return {
       store,
       arrayApi: [],
-      isLoading: 0,
+      isLoading: false,
+      currentPage: 1,
+      totalPages: 1,
     };
   },
   methods: {
-    async getRepo() {
+    async getRepo(pageNumber = 1) {
       this.isLoading = true;
-      console.log("Sono in getRepo()");
-      console.log(this.store.searchInput);
-      let url;
-      const data = {
-        params: {
-          q: `${this.store.searchInput}`,
-        },
-        headers: {
-          Authorization: `${config.githubToken}`,
-          "X-GitHub-Api-Version": "2022-11-28",
-        },
-      };
-      if (
-        this.store.searchInput.trim() != "" &&
-        this.store.TypeSearch == "Repository"
-      ) {
-        url = "repositories";
-      } else if (
-        this.store.searchInput.trim() != "" &&
-        this.store.TypeSearch == "users"
-      ) {
-        url = "users";
-      }
+
       try {
-        const res = await axios.get(
-          `https://api.github.com/search/${url}`,
-          data
+        const response = await axios.get(
+          "https://api.github.com/search/repositories",
+          {
+            params: {
+              q: this.store.searchInput,
+              page: pageNumber,
+              per_page: 6, // Impostiamo il numero di risultati per pagina a 10
+              order: "desc",
+            },
+            headers: {
+              Authorization: `${config.githubToken}`,
+              "X-GitHub-Api-Version": "2022-11-28",
+            },
+          }
         );
-        this.arrayApi = res.data.items;
-        if (this.arrayApi.length > 0 && this.store.cliccato == 1) {
-          this.store.cliccato = 0;
-        }
-        console.log(this.arrayApi);
+        this.arrayApi = response.data.items;
+        this.totalPages = Math.ceil(response.data.total_count / 6); // Calcoliamo il numero totale di pagine
       } catch (error) {
-        console.error(
-          "Errore durante il recupero dei dati dalla prima API:",
-          error
-        );
+        console.error("Errore durante il recupero dei dati:", error);
       } finally {
-        // Questo blocco verrà sempre eseguito, indipendentemente dall'errore o dal successo della chiamata Axios
-        // Qui puoi eseguire operazioni di pulizia o aggiornare lo stato dell'applicazione
-        // Per esempio, fermare il loader
         this.isLoading = false;
+        this.showPagination();
+      }
+    },
+    showPagination() {
+      if (this.isLoading) {
+        document.getElementById("pagination").classList.add("d-none"); // Nascondi la paginazione durante il caricamento
+      } else {
+        setTimeout(() => {
+          document.getElementById("pagination").classList.remove("d-none"); // Mostra la paginazione quando i dati sono stati caricati
+        }, 500);
+      }
+    },
+    nextPage() {
+      if (this.currentPage < this.totalPages) {
+        this.currentPage++;
+        this.getRepo(this.currentPage);
+        this.showPagination();
+      }
+    },
+    previousPage() {
+      if (this.currentPage > 1) {
+        this.currentPage--;
+        this.getRepo(this.currentPage);
+        this.showPagination();
       }
     },
   },
@@ -68,13 +74,11 @@ export default {
       console.log("valore nuovo:", newValue);
       console.log("valore vecchio:", oldValue);
     },
-  },
-    watch: {
-      "store.TypeSearch": function (newVal, oldVal) {
-        this.getRepo();
-        // Esegui altre azioni qui in base al nuovo valore
-      },
+    "store.TypeSearch": function () {
+      this.getRepo();
+      // Esegui altre azioni qui in base al nuovo valore
     },
+  },
 
   computed: {
     checkifClick() {
@@ -141,6 +145,15 @@ export default {
       <span class="sr-only">Loading...</span>
     </div>
     <p>Caricamento...</p>
+  </div>
+  <div id="pagination" class="d-none">
+    <button @click="previousPage" :disabled="currentPage === 1">
+      Indietro
+    </button>
+    <span>Pagina {{ currentPage }} di {{ totalPages }}</span>
+    <button @click="nextPage" :disabled="currentPage === totalPages">
+      Avanti
+    </button>
   </div>
 </template>
 

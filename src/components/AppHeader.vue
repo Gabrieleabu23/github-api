@@ -12,19 +12,20 @@ export default {
     };
   },
   methods: {
-    debounce(){
+    debounce() {
       clearTimeout(this.timer);
-      this.timer = setTimeout(() => {
-        this.elapsedTime = 0;
-        this.checkClick();
-      }, 700); 
-      this.elapsedTime++;
+      if (this.store.searchInput.trim().length >= 3) {
+        this.timer = setTimeout(() => {
+          this.elapsedTime = 0;
+          this.checkClick();
+        }, 700);
+        this.elapsedTime++;
+      }
     },
     checkClick() {
-      // console.log(this.store.searchInput);
-      if(this.store.searchInput.trim().length <3){
+      if (this.store.searchInput.trim().length < 3) {
         document.getElementById('minLength').classList.remove('d-none');
-      }else{
+      } else {
         document.getElementById('minLength').classList.add('d-none');
         this.store.TypeSearch = document.getElementById("typeSearch").value;
         if (this.store.clicked) {
@@ -33,8 +34,6 @@ export default {
           this.store.clicked = 1;
         }
       }
-      
-      // console.log('cliccato!');
     },
   },
 
